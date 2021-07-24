@@ -16,7 +16,7 @@ A google chrome extension that given a glob pattern string, filters your github 
 ## Implementation
 
 ### Glob Filter Widget
-We search for the github toolbar with all the widgets and append our widget in there. From there, you can enter a glob pattern string and when you press `Run filter`, we'll collapse any opened files that matches the glob pattern.
+We search for the github toolbar with all the widgets and append our widget in there. From there, you can enter a glob pattern string and when you press `Run filter`, we'll collapse any opened files that **does not** matches the glob pattern.
 
 ### Glob pattern matching
 This extension uses [minimatch](https://github.com/isaacs/minimatch) to perform the glob matching. Because `minimatch` is a node package and uses `cjs`. We need to use a bundler to generate an `esm`, since browsers can only use `esm`.

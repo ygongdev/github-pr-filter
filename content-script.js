@@ -49,9 +49,10 @@
       const changedFilenames = changedFiles.map(getFilename);
       const filteredFilenames = filterGlob(changedFilenames, globString);
 
+      // Get files that do not match the glob, so we can collapse them.
       const filteredFiles = changedFiles.filter(file => {
         const name = getFilename(file);
-        return filteredFilenames.indexOf(name) >= 0;
+        return filteredFilenames.indexOf(name) < 0;
       });
 
       filteredFiles.forEach(file => {
