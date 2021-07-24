@@ -13,6 +13,7 @@
   const WIDGET_ID = 'glob-filter-widget';
 
   // Because sometimes Github is changing page content and url without triggering a reload, so we need to use a mutation observer.
+  // If the page reload, the whole content-script will be reloaded.
   const filterObserver = new MutationObserver(debounce(run, 1000));
   filterObserver.observe(document.body, { childList: true, subtree: true });
 
