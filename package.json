@@ -1,0 +1,23 @@
+{
+  "name": "github-pr-filter",
+  "version": "1.0.0",
+  "description": "",
+  "main": "content-script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "package": "bash package.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ygongdev/github-pr-filter.git"
+  },
+  "author": "Yicheng Gong",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ygongdev/github-pr-filter/issues"
+  },
+  "homepage": "https://github.com/ygongdev/github-pr-filter#readme",
+  "dependencies": {
+    "minimatch": "^3.0.4"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "name": "Github PR Filter",
+  "description": "An extension that allows you to filter pull request file changes via glob pattern",
+  "author": "Yicheng Gong",
+  "version": "1.0.0",
+  "manifest_version": 3,
+  "icons": {
+    "16": "public/icon16.png",
+    "48": "public/icon48.png",
+    "128": "public/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.github.com/**/pull/**/files*",
+        "*://*.githubprivate.com/**/pull/**/files*"
+      ],
+      "js": [
+        "content-script.js"
+      ],
+      "run_at": "document_end"
+    }
+  ],
+  "host_permissions": [
+    "*://*.github.com/*",
+    "*://*.githubprivate.com/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["filterGlob-bundle.js"],
+      "matches": [
+        "*://*.github.com/*",
+        "*://*.githubprivate.com/*"
+      ]
+    }
+  ]
+}
