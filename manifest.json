@@ -12,8 +12,8 @@
   "content_scripts": [
     {
       "matches": [
-        "*://*.github.com/**/pull/**/files*",
-        "*://*.githubprivate.com/**/pull/**/files*"
+        "*://*.github.com/*",
+        "*://*.githubprivate.com/*"
       ],
       "js": [
         "content-script.js"
