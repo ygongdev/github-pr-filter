@@ -1,5 +1,6 @@
 # github-pr-filter
 
+A google chrome extension that given a glob pattern string, filters your github pull request's changed files by collapsing them.
 
 ## Prerequisite
 1. [minimatch](https://github.com/isaacs/minimatch)
