@@ -2,11 +2,14 @@
 
 A google chrome extension that given a glob pattern string, filters your github pull request's changed files by collapsing them.
 
+## Usage
+[Chrome Extension](https://chrome.google.com/webstore/detail/github-pr-filter/pphamkmhoolkjbakfllocenmbdbdnakl)
+
 ## Prerequisite
 1. [minimatch](https://github.com/isaacs/minimatch)
 2. [browserify](https://github.com/browserify/browserify)
 
-## Usage
+## Develop
 1. Run `browserify assets/filterGlob.js --s filterGlob > filterGlob-bundle.js`.
 2. [Load the unpacked extension](https://developer.chrome.com/docs/extensions/mv3/getstarted/#manifest)
 3. Go to any pull request's changed files page and you should see the widget
