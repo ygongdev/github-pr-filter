@@ -89,18 +89,26 @@
         const changedFiles = [...getAllChangedFiles()];
         const changedFilenames = changedFiles.map(getFilename);
         const filteredFilenames = filterGlob(changedFilenames, globString);
+
+        // We first, collapse everything. This is good for also handling  resetting the initial state when the filter changes.
+        changedFiles.forEach(changedFile => {
+          const button = getCollapseButton(changedFile);
+          if (button.getAttribute('aria-expanded') === 'true') {
+            button.click();
+          }
+        })
   
-        // Get files that do not match the glob, so we can collapse them.
+        // Get files that match the glob.
         const filteredFiles = changedFiles.filter(file => {
           const name = getFilename(file);
-          return filteredFilenames.indexOf(name) < 0;
+          return filteredFilenames.indexOf(name) >= 0;
         });
   
         filteredFiles.forEach(file => {
           const button = getCollapseButton(file);
   
-          // If file is currently open, click to collapse it.
-          if (button.getAttribute('aria-expanded') === 'true') {
+          // If file is currently collapsed, click to expand it.
+          if (button.getAttribute('aria-expanded') === 'false') {
             button.click();
           }
         })
