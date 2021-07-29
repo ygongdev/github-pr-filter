@@ -10,6 +10,7 @@
    */
   // Prevents toolbar creation from keep triggering mutation observer.
   const WIDGET_ID = 'glob-filter-widget';
+  const STORAGE_KEY = 'github-pr-filter-saved-filters';
 
   // Because sometimes Github is changing page content and url without triggering a reload, so we need to use a mutation observer.
   // If the page reload, the whole content-script will be reloaded.
@@ -20,12 +21,15 @@
     widget;
     trigger;
     dropdown;
+    filterGlobToggleDOM;
+    filterRegexToggleDOM;
     filterType = "glob";
     filterInputDOM;
     filterRegexFlagsTitleDOM;
     filterRegexFlagsDOM;
     filterRegexFlags = "";
     filterValue = "";
+    savedFiltersDOM;
 
     constructor() {
       this.widget = this.constructWidget();
@@ -33,6 +37,8 @@
       this.dropdown = this.constructDropdown();
       this.widget.appendChild(this.trigger);
       this.widget.appendChild(this.dropdown);
+
+      this.setupSavedFiltersListener();
     }
     
     constructGithubContainer() {
@@ -74,11 +80,13 @@
       const filterOptions = this.constructFilterOptions();
       const filterInput = this.constructFilterInput();
       const filterSubmit = this.constructFilterSubmit();
+      const savedFilters = this.constructSavedFilters();
 
       dropdown.appendChild(header);
       dropdown.appendChild(filterOptions);
       dropdown.appendChild(filterInput);
       dropdown.appendChild(filterSubmit);
+      dropdown.appendChild(savedFilters);
 
       return dropdown;
     }
@@ -112,6 +120,7 @@
         this.filterRegexFlagsTitleDOM.style.display = "none";
         this.filterRegexFlagsDOM.style.display = "none";
       });
+      this.filterGlobToggleDOM = globToggle;
 
       const globLabel = document.createElement('label');
       globLabel.for = 'glob';
@@ -134,6 +143,7 @@
         this.filterRegexFlagsTitleDOM.style.display = "block";
         this.filterRegexFlagsDOM.style.display = "block";
       });
+      this.filterRegexToggleDOM = regexToggle;
 
       const regexLabel = document.createElement('label');
       regexLabel.for = 'regex';
@@ -204,10 +214,196 @@
 
       submit.addEventListener('click', () => {
         this.filterFiles(this.filterType);
-      })
+      });
 
+      const savedFilterButton = this.constructSaveFilterButton();
+
+      container.appendChild(savedFilterButton);
       container.appendChild(submit);
       return container;
+    }
+
+    constructSaveFilterButton() {
+      const save = document.createElement('button');
+      // Copying Github's class names
+      save.className = "btn btn-lg";
+      save.textContent = "Save Filter";
+      save.style.width = "100%";
+      save.style.backgroundColor = "blue";
+
+      save.addEventListener('click', () => {
+        this.saveFilter(); 
+      });
+
+      return save;
+    }
+
+    constructSavedFilters() {
+      const container = document.createElement('div');
+      const header = document.createElement('div');
+      header.className = "select-menu-header";
+      header.style.display = "flex";
+      header.style.alignItems = "center";
+      header.style.justifyContent = "center";
+      const text = document.createElement('span');
+      text.className = "select-menu-title";
+      text.textContent = "Saved filters (<name>|<value>|<flags>|<type>)";
+      header.appendChild(text);
+
+      const selection = document.createElement('div');
+      selection.style.maxHeight = "300px";
+      selection.style.overflow = "auto";
+
+      container.appendChild(header);
+      container.appendChild(selection);
+
+      this.savedFiltersDOM = selection;
+
+      this.updateSavedFilters(selection);
+
+      return container;
+    }
+
+    updateSavedFilters(container) {
+      let savedFiltersFragment = document.createDocumentFragment();
+
+      chrome.storage.sync.get([ STORAGE_KEY ], (result) => {
+        const savedFilters = result[STORAGE_KEY];
+
+        if (!savedFilters || savedFilters.length <= 0) {
+          container.innerHTML = "";
+          return;
+        }
+
+        savedFilters.forEach(filter => {
+          const savedFilter = document.createElement('div');
+          savedFilter.className = "select-menu-item";
+          savedFilter.role = "menuitem";
+          savedFilter.style.display = "flex";
+          savedFilter.style.justifyContent = "space-between";
+
+          const metaContainer = document.createElement('div');
+          metaContainer.style.display = "flex";
+
+          const filterName = document.createElement('span');
+          filterName.textContent = filter.name + ' | ';
+          filterName.style.whiteSpace = "pre-wrap";
+  
+          const filterValue = document.createElement('span');
+          filterValue.textContent = filter.value + ' | ';
+          filterValue.style.whiteSpace = "pre-wrap";
+  
+          const filterType = document.createElement('span');
+          filterType.textContent = filter.type;
+          filterType.style.whiteSpace = "pre-wrap";
+
+          metaContainer.appendChild(filterName);
+          metaContainer.appendChild(filterValue);
+          if (filter.flags) {
+            const filterFlags = document.createElement('span');
+            filterFlags.textContent = filter.flags + ' | ';
+            filterFlags.style.whiteSpace = "pre-wrap";
+            metaContainer.appendChild(filterFlags);
+          }
+          metaContainer.appendChild(filterType);
+
+          const controlsContainer = document.createElement('div');
+          controlsContainer.style.display = "flex";
+
+          const applyButton = document.createElement('button');
+          applyButton.className = "btn btn-sm btn-primary";
+          applyButton.style.marginRight = "8px";
+          applyButton.textContent = "Apply";
+
+          const deleteButton = document.createElement('button');
+          deleteButton.className = "btn btn-sm btn-danger";
+          deleteButton.textContent = "Delete";
+          
+          applyButton.addEventListener('click', () => {
+            this.applySavedFilter(filter);
+          });
+
+          deleteButton.addEventListener('click', () => {
+            this.deleteSavedFilter(filter.name);
+          });
+
+          controlsContainer.appendChild(applyButton);
+          controlsContainer.appendChild(deleteButton);
+
+          savedFilter.appendChild(metaContainer);
+          savedFilter.appendChild(controlsContainer);
+
+          savedFiltersFragment.appendChild(savedFilter);
+        });
+        container.innerHTML = "";
+        container.appendChild(savedFiltersFragment)
+      });
+    }
+
+    /**
+     * Switch toggle to the right type, hopefully that resets everything.
+     * Replace filter input value;
+     */
+    applySavedFilter({ value, type, flags}) {
+      switch (type) {
+        case "glob":
+          this.filterGlobToggleDOM.click();
+          this.filterInputDOM.value = value;
+          this.filterValue = value;
+          break;
+        case "regex":
+          this.filterRegexToggleDOM.click();
+          this.filterInputDOM.value = value;
+          this.filterValue = value;
+          this.filterRegexFlagsDOM.value = flags;
+          this.filterRegexFlags = flags;
+          break;
+        default:
+          window.alert('Apply failed');
+          break;
+      }
+    } 
+
+    deleteSavedFilter(name) {
+      if (window.confirm(`Are you sure you want to delete ${name}`)) {
+        chrome.storage.sync.get([ STORAGE_KEY ] , (result) => {
+          const savedFilters = result[STORAGE_KEY];
+          const index = savedFilters.findIndex((filter) => filter.name === name);
+          savedFilters.splice(index, 1);
+        
+          chrome.storage.sync.set({ [STORAGE_KEY]: [ ...savedFilters ]});
+        });
+      }
+    }
+
+    saveFilter() {
+      if (!this.filterValue) {
+        window.alert('No value provided. Saved failed');
+        return;
+      }
+
+      const name = window.prompt('Enter a name for this filter');
+
+      if (!name) {
+        window.alert("No name provided. Save failed");
+        return;
+      }
+
+      chrome.storage.sync.get([ STORAGE_KEY ] , (result) => {
+        const savedFilters = result[STORAGE_KEY];
+        const newFilter = {
+          name,
+          value: this.filterValue,
+          type: this.filterType,
+          flags: this.filterRegexFlags,
+        }
+      
+        if (!savedFilters) {
+          chrome.storage.sync.set({ [STORAGE_KEY]: [ newFilter ]});
+        } else {
+          chrome.storage.sync.set({ [STORAGE_KEY]: [ ...savedFilters, newFilter ]});
+        }
+      });
     }
 
     resetFilterInput() {
@@ -247,6 +443,17 @@
       } catch (error) {
         window.alert(error);
       }
+    }
+
+    setupSavedFiltersListener() {
+      chrome.storage.onChanged.addListener((changes) => {
+        for (let [key, _] of Object.entries(changes)) {
+
+          if (key === STORAGE_KEY) {
+            this.updateSavedFilters(this.savedFiltersDOM);
+          }
+        }
+      });
     }
 
     /**

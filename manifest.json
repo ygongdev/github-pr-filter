@@ -25,6 +25,11 @@
     "*://*.github.com/*",
     "*://*.githubprivate.com/*"
   ],
+  "permissions": [
+    "storage",
+    "*://*.github.com/*",
+    "*://*.githubprivate.com/*"
+  ],
   "web_accessible_resources": [
     {
       "resources": ["filterGlob-bundle.js"],
