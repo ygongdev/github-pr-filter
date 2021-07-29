@@ -5,6 +5,14 @@ A google chrome extension that given a glob pattern string, filters your github 
 ## Usage
 [Chrome Extension](https://chrome.google.com/webstore/detail/github-pr-filter/pphamkmhoolkjbakfllocenmbdbdnakl)
 
+## Features
+
+1. Glob search
+2. Regex search
+3. Saving a filter
+4. Applying a filter
+5. Deleting a filter
+
 ## Prerequisite
 1. [minimatch](https://github.com/isaacs/minimatch)
 2. [browserify](https://github.com/browserify/browserify)
@@ -24,6 +32,9 @@ We search for the github toolbar with all the widgets and append our widget in t
 ### Glob pattern matching
 This extension uses [minimatch](https://github.com/isaacs/minimatch) to perform the glob matching. Because `minimatch` is a node package and uses `cjs`. We need to use a bundler to generate an `esm`, since browsers can only use `esm`.
 So I chose [browserify](https://github.com/browserify/browserify).
+
+### Regex pattern matching
+This extension uses the native Javascript `RegExp` to perform regular expression searches.
 
 ## Contribute
 Any contribution is welcomed! Please take a look at the issues or look for `TODO` comments.
