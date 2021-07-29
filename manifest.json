@@ -2,7 +2,7 @@
   "name": "Github PR Filter",
   "description": "An extension that allows you to filter pull request file changes via glob pattern",
   "author": "Yicheng Gong",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "manifest_version": 3,
   "icons": {
     "16": "public/icon16.png",
